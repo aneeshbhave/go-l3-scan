@@ -4,10 +4,20 @@ import (
 	"fmt"
 )
 
-func main() {
-	mat := init_matcher(10, true, true)
-	mat.add_pattern("Aneesh", " ")
-	mat.match_pattern("Aneesh Bhavee helloo whatup eeeee", callback_func)
+func main() {}
+
+func remove_duplicates(arr []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+
+	for _, e := range arr {
+		if _, value := keys[e]; !value {
+			keys[e] = true
+			list = append(list, e)
+		}
+	}
+
+	return list
 }
 
 func callback_func(pos int, val string) {
