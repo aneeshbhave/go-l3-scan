@@ -1,38 +1,66 @@
 package main
 
-import "unicode"
+//*---------------------------------------------
+//TODO Write code for dir_add_pattern function
+//TODO Better error handling
+//*---------------------------------------------
 
+import (
+	"log"
+	"unicode"
+
+	goahocorasick "github.com/anknown/ahocorasick"
+)
+
+//Used to convert text to proprietary patterns
 const ALPHABET = "A"
 const NUMERICAL = "N"
 const SPACE = "W"
 const SPECIAL = "S"
 
 type Matcher struct {
-	patterns     []string
+	patterns     [][]rune
 	keep_special bool
 	keep_unique  bool
 }
 
-func new_matcher(init_capacity int, keep_special bool, keep_unique bool) *Matcher {
+func init_matcher(init_capacity int, keep_special bool, keep_unique bool) *Matcher {
 	return &Matcher{
-		patterns:     make([]string, 0, init_capacity),
+		patterns:     make([][]rune, 0, init_capacity),
 		keep_special: keep_special,
 		keep_unique:  keep_unique,
 	}
 }
 
-func (mat *Matcher) add_pattern(inp ...string) {
-	mat.patterns = append(mat.patterns, mat.to_pat(inp[0]))
+func (mat *Matcher) add_pattern(inp string, pad string) {
+	mat.patterns = append(mat.patterns, []rune(mat.to_pat(pad+inp+pad)))
 }
 
-func (mat *Matcher) f_add_pattern(fpath string) {
-	lines := read_file_arr(fpath)
+func (mat *Matcher) f_add_pattern(fpath string, pad string) {
+	lines, err := read_file_arr(fpath)
+	if err != nil {
+		log.Panicf("Error reading file at %v", fpath)
+	}
 	for _, line := range lines {
-		mat.add_pattern(line)
+		mat.add_pattern(line, pad)
 	}
 }
 
 func (mat *Matcher) dir_add_pattern(dirpath string) {}
+
+func (mat *Matcher) match_pattern(haystack string, callback_func func(int, string)) {
+	aho := new(goahocorasick.Machine)
+	r_haystack := []rune(mat.to_pat(haystack))
+
+	if err := aho.Build(mat.patterns); err != nil {
+		log.Panicf("Error building trie")
+	}
+
+	matches := aho.MultiPatternSearch(r_haystack, false)
+	for _, e := range matches {
+		callback_func(e.Pos, string(e.Word))
+	}
+}
 
 func (mat Matcher) to_pat(inp string) string {
 	pat := ""

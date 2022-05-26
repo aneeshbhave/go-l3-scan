@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
+	"io"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -29,19 +29,18 @@ func (w *Walker) walk(s string, d fs.DirEntry, err error) error {
 	return nil
 }
 
-func read_file_str(fpath string) string {
+func read_file_str(fpath string) (string, error) {
 	data, err := ioutil.ReadFile(fpath)
 	if err != nil {
-		log.Panicf("Could not read data from %v", fpath)
+		return "", err
 	}
-
-	return string(data)
+	return string(data), nil
 }
 
-func read_file_arr(fpath string) []string {
+func read_file_arr(fpath string) ([]string, error) {
 	file, err := os.Open(fpath)
 	if err != nil {
-		log.Panicf("Could not read data from %v", fpath)
+		return nil, err
 	}
 	defer file.Close()
 
@@ -50,5 +49,25 @@ func read_file_arr(fpath string) []string {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
-	return lines
+	return lines, nil
+}
+
+func read_file_runearr_arr(fpath string) ([][]rune, error) {
+	arr := [][]rune{}
+
+	fp, err := os.OpenFile(fpath, os.O_RDONLY, 0660)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := bufio.NewReader(fp)
+	for {
+		line, err := reader.ReadBytes('\n')
+		if err != nil || err == io.EOF {
+			break
+		}
+		arr = append(arr, []rune(string(line)))
+	}
+
+	return arr, nil
 }
