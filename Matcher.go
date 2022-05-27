@@ -4,6 +4,7 @@ package main
 //TODO Write code for dir_add_pattern function
 //TODO Fix the dir_ls_rec function
 //TODO Change mode of error handling
+//TODO Handle Error for f_match_pattern
 //*---------------------------------------------
 
 import (
@@ -47,9 +48,14 @@ func (mat *Matcher) f_add_pattern(fpath string, pad string) {
 	}
 }
 
-func (mat *Matcher) dir_add_pattern(dirpath string) {}
+func (mat *Matcher) dir_add_pattern(dirpath string, pad string) {
+	files := dir_ls_rec(dirpath)
+	for _, file := range files {
+		mat.f_add_pattern(file, pad)
+	}
+}
 
-func (mat *Matcher) match_pattern(haystack string, callback_func func(int, string)) {
+func (mat *Matcher) match_pattern(haystack string, fname string, callback_func func(string, int, int, string, string)) {
 	aho := new(goahocorasick.Machine)
 	r_haystack := []rune(mat.to_pat(haystack))
 
@@ -59,7 +65,25 @@ func (mat *Matcher) match_pattern(haystack string, callback_func func(int, strin
 
 	matches := aho.MultiPatternSearch(r_haystack, false)
 	for _, e := range matches {
-		callback_func(e.Pos, string(e.Word))
+		pattern := string(e.Word)
+		i, j := e.Pos, e.Pos+len(pattern)
+		word := haystack[i:j]
+		callback_func(fname, i, j, pattern, word)
+	}
+}
+
+func (mat *Matcher) f_match_pattern(fpath string, callback_func func(string, int, int, string, string)) {
+	data, err := read_file_str(fpath)
+	if err != nil {
+		return
+	}
+	mat.match_pattern(data, fpath, callback_func)
+}
+
+func (mat *Matcher) dir_match_pattern(dirpath string, callback_func func(string, int, int, string, string)) {
+	files := dir_ls_rec(dirpath)
+	for _, file := range files {
+		mat.f_match_pattern(file, callback_func)
 	}
 }
 
