@@ -100,7 +100,6 @@ func callback_file(arr ...any) {
 	fmt.Printf("%v %d %d %v %v\n", arr[0], arr[1], arr[2], arr[3], arr[4])
 }
 
-//TODO Implement tfunc_stdout function
 func tfunc_stdout(arr [][]rune) {
 	for _, val := range arr {
 		fmt.Println(string(val))
@@ -108,6 +107,4 @@ func tfunc_stdout(arr [][]rune) {
 }
 
 //TODO Implement tfunc_file function
-func tfunc_file(arr ...any) {
-
-}
+func tfunc_file(arr ...any) {}

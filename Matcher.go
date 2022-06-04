@@ -1,10 +1,7 @@
 package main
 
 //*---------------------------------------------
-//TODO Write code for dir_add_pattern function
-//TODO Fix the dir_ls_rec function
 //TODO Change mode of error handling
-//TODO Handle Error for f_match_pattern
 //*---------------------------------------------
 
 import (
