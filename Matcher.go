@@ -23,35 +23,37 @@ const SPECIAL = "S"
 type Matcher struct {
 	patterns     [][]rune
 	keep_special bool
-	keep_unique  bool
 }
 
-func init_matcher(init_capacity int, keep_special bool, keep_unique bool) *Matcher {
+func init_matcher(init_capacity int, keep_special bool) *Matcher {
 	return &Matcher{
 		patterns:     make([][]rune, 0, init_capacity),
 		keep_special: keep_special,
-		keep_unique:  keep_unique,
 	}
 }
 
-func (mat *Matcher) add_pattern(inp string, pad string) {
-	mat.patterns = append(mat.patterns, []rune(mat.to_pat(pad+inp+pad)))
+func (mat *Matcher) add_pattern(inp string, pad string, is_raw bool) {
+	to_app := pad + inp + pad
+	if !is_raw {
+		to_app = mat.to_pat(to_app)
+	}
+	mat.patterns = append(mat.patterns, []rune(to_app))
 }
 
-func (mat *Matcher) f_add_pattern(fpath string, pad string) {
+func (mat *Matcher) f_add_pattern(fpath string, pad string, is_raw bool) {
 	lines, err := read_file_arr(fpath)
 	if err != nil {
 		log.Panicf("Error reading file at %v", fpath)
 	}
 	for _, line := range lines {
-		mat.add_pattern(line, pad)
+		mat.add_pattern(line, pad, is_raw)
 	}
 }
 
-func (mat *Matcher) dir_add_pattern(dirpath string, pad string) {
+func (mat *Matcher) dir_add_pattern(dirpath string, pad string, is_raw bool) {
 	files := dir_ls_rec(dirpath)
 	for _, file := range files {
-		mat.f_add_pattern(file, pad)
+		mat.f_add_pattern(file, pad, is_raw)
 	}
 }
 
