@@ -55,7 +55,7 @@ func (mat *Matcher) dir_add_pattern(dirpath string, pad string) {
 	}
 }
 
-func (mat *Matcher) match_pattern(haystack string, fname string, callback_func func(string, int, int, string, string)) {
+func (mat *Matcher) match_pattern(haystack string, fname string, callback_func func(...any)) {
 	aho := new(goahocorasick.Machine)
 	r_haystack := []rune(mat.to_pat(haystack))
 
@@ -72,7 +72,7 @@ func (mat *Matcher) match_pattern(haystack string, fname string, callback_func f
 	}
 }
 
-func (mat *Matcher) f_match_pattern(fpath string, callback_func func(string, int, int, string, string)) {
+func (mat *Matcher) f_match_pattern(fpath string, callback_func func(...any)) {
 	data, err := read_file_str(fpath)
 	if err != nil {
 		return
@@ -80,7 +80,7 @@ func (mat *Matcher) f_match_pattern(fpath string, callback_func func(string, int
 	mat.match_pattern(data, fpath, callback_func)
 }
 
-func (mat *Matcher) dir_match_pattern(dirpath string, callback_func func(string, int, int, string, string)) {
+func (mat *Matcher) dir_match_pattern(dirpath string, callback_func func(...any)) {
 	files := dir_ls_rec(dirpath)
 	for _, file := range files {
 		mat.f_match_pattern(file, callback_func)
