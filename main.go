@@ -14,7 +14,7 @@ func main() {
 	flag.StringVar(&dict_path, "d", "", "Path to dictionary file")
 	flag.StringVar(&match_path, "p", "", "Path to match file or dir")
 	flag.StringVar(&output_file, "o", "", "Path to output to")
-	flag.StringVar(&pad_str, "pad", "", "Padding string")
+	flag.StringVar(&pad_str, "pad", " ", "Padding string")
 
 	flag.BoolVar(&training, "t", false, "Training mode instead of matching mode (default is match mode)")
 	flag.BoolVar(&keep_special, "s", false, "Keep special characters instead of replacing them with pattern")
@@ -23,6 +23,11 @@ func main() {
 	flag.IntVar(&init_size, "i", 250, "Guesstimate of how many patterns may appear in a file (for optimization)")
 
 	flag.Parse()
+
+	//!DEBUG LINES
+	fmt.Printf("%v\n%v\n%v\n%v\n", dict_path, match_path, output_file, pad_str)
+	fmt.Printf("%v\n%v\n%v\n", training, keep_special, is_raw)
+	fmt.Printf("%v\n", init_size)
 
 	//Assign callback function based on what -o parameter is
 	callback_func := callback_stdout
@@ -39,19 +44,25 @@ func main() {
 		print_error(fmt.Sprintf("%v does not exist\n", dict_path))
 	}
 	if dict_is_dir {
-		mat.dir_add_pattern(dict_path, pad_str, is_raw)
+		if is_raw {
+			mat.dir_add_raw(dict_path)
+		} else {
+			mat.dir_add_pattern(dict_path, pad_str)
+		}
 	} else {
-		mat.f_add_pattern(dict_path, pad_str, is_raw)
+		if is_raw {
+			mat.f_add_raw(dict_path)
+		} else {
+			mat.f_add_pattern(dict_path, pad_str)
+		}
 	}
 
 	//Scenario: Training
 	if training {
 		if output_file == "" {
 			tfunc_stdout(mat.patterns)
-			os.Exit(0)
 		}
 		tfunc_file(mat.patterns, output_file)
-		os.Exit(0)
 	} else {
 		//Scenario: Matching
 		match_exists, match_is_dir := path_describe(match_path)
@@ -77,20 +88,6 @@ func print_error(message string) {
 	os.Exit(-2)
 }
 
-func remove_duplicates(arr []string) []string {
-	keys := make(map[string]bool)
-	list := []string{}
-
-	for _, e := range arr {
-		if _, value := keys[e]; !value {
-			keys[e] = true
-			list = append(list, e)
-		}
-	}
-
-	return list
-}
-
 func callback_stdout(arr ...any) {
 	fmt.Printf("%v %d %d %v %v\n", arr[0], arr[1], arr[2], arr[3], arr[4])
 }
@@ -100,6 +97,8 @@ func callback_file(arr ...any) {
 	fmt.Printf("%v %d %d %v %v\n", arr[0], arr[1], arr[2], arr[3], arr[4])
 }
 
+//TODO Implement tfunc_stdout function
+//!SHOULD EXIT PROGRAM
 func tfunc_stdout(arr [][]rune) {
 	for _, val := range arr {
 		fmt.Println(string(val))
@@ -107,4 +106,7 @@ func tfunc_stdout(arr [][]rune) {
 }
 
 //TODO Implement tfunc_file function
-func tfunc_file(arr ...any) {}
+//!SHOULD EXIT PROGRAM
+func tfunc_file(arr ...any) {
+	fmt.Printf("%#v", arr)
+}

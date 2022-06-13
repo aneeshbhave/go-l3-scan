@@ -2,6 +2,8 @@ package main
 
 //*---------------------------------------------
 //TODO Change mode of error handling
+//TODO Unique Patterns
+//TODO Use preproc. dict file
 //*---------------------------------------------
 
 import (
@@ -29,28 +31,47 @@ func init_matcher(init_capacity int, keep_special bool) *Matcher {
 	}
 }
 
-func (mat *Matcher) add_pattern(inp string, pad string, is_raw bool) {
+func (mat *Matcher) add_pattern(inp string, pad string) {
 	to_app := pad + inp + pad
-	if !is_raw {
-		to_app = mat.to_pat(to_app)
-	}
 	mat.patterns = append(mat.patterns, []rune(to_app))
 }
 
-func (mat *Matcher) f_add_pattern(fpath string, pad string, is_raw bool) {
+func (mat *Matcher) add_pattern_raw(inp string) {
+	mat.patterns = append(mat.patterns, []rune(inp))
+}
+
+func (mat *Matcher) f_add_raw(fpath string) {
 	lines, err := read_file_arr(fpath)
 	if err != nil {
 		log.Panicf("Error reading file at %v", fpath)
 	}
 	for _, line := range lines {
-		mat.add_pattern(line, pad, is_raw)
+		mat.add_pattern_raw(line)
 	}
 }
 
-func (mat *Matcher) dir_add_pattern(dirpath string, pad string, is_raw bool) {
+func (mat *Matcher) dir_add_raw(dirpath string) {
 	files := dir_ls_rec(dirpath)
 	for _, file := range files {
-		mat.f_add_pattern(file, pad, is_raw)
+		mat.f_add_raw(file)
+	}
+
+}
+
+func (mat *Matcher) f_add_pattern(fpath string, pad string) {
+	lines, err := read_file_arr(fpath)
+	if err != nil {
+		log.Panicf("Error reading file at %v", fpath)
+	}
+	for _, line := range lines {
+		mat.add_pattern(line, pad)
+	}
+}
+
+func (mat *Matcher) dir_add_pattern(dirpath string, pad string) {
+	files := dir_ls_rec(dirpath)
+	for _, file := range files {
+		mat.f_add_pattern(file, pad)
 	}
 }
 
